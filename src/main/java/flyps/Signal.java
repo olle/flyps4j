@@ -47,14 +47,20 @@ public class Signal {
     }
 
 
-    public void connect(Runnable connect) {
+    public Runnable connect(Runnable connect) {
 
-        this.connections.add((s, n, p) -> connect.run());
+        TriConsumer<Signal, String, String> connection = (s, n, p) -> connect.run();
+
+        this.connections.add(connection);
+
+        return () -> this.connections.remove(connection);
     }
 
 
-    public void connect(TriConsumer<Signal, String, String> triggerFn) {
+    public Runnable connect(TriConsumer<Signal, String, String> triggerFn) {
 
         this.connections.add(triggerFn);
+
+        return () -> this.connections.remove(triggerFn);
     }
 }

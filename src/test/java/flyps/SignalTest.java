@@ -90,23 +90,27 @@ public class SignalTest {
             assertThat(updates.get(0).second()).isEqualTo("foo");
             assertThat(updates.get(0).third()).isEqualTo("bar");
         }
+
+
+        @Test
+        @DisplayName("disconnects a connected output")
+        void ensureDisconnectsConnectedOutput() throws Exception {
+
+            var r1 = new AtomicInteger(0);
+            var r2 = new AtomicInteger(0);
+            var s = Signal.of("foo");
+            s.connect(() -> r1.incrementAndGet());
+
+            Runnable disconnector = s.connect(() -> r2.incrementAndGet());
+            s.reset("bar");
+            disconnector.run();
+            s.reset("baz");
+
+            assertThat(r1.get()).isEqualTo(2);
+            assertThat(r2.get()).isEqualTo(1);
+        }
     }
 
-//    describe("signal", () => {
-//      it("disconnects a connected output", () => {
-//        let outputs = [0, 0];
-//        let s = signal("foo");
-//        s.connect(() => outputs[0]++);
-//        let disconnect = s.connect(() => outputs[1]++);
-//        s.reset("bar");
-//        disconnect();
-//        s.reset("baz");
-//
-//        expect(outputs[0]).toBe(2);
-//        expect(outputs[1]).toBe(1);
-//      });
-//    });
-//
 //    describe("signalFn", () => {
 //      it("returns the result of fn as its current value", () => {
 //        let runs = 0;
