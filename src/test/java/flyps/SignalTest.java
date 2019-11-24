@@ -4,9 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class SignalTest {
@@ -42,39 +44,55 @@ public class SignalTest {
             s.update(state -> state + "bar");
             assertThat(s.value()).isEqualTo("foobar");
         }
+
+
+        @Test
+        @DisplayName("triggers connected outputs for new values")
+        void ensureTriggersConnectedOutletsForNewValues() throws Exception {
+
+            var updates = new AtomicInteger(0);
+            var s = Signal.of("foo");
+            s.connect(() -> updates.incrementAndGet());
+            s.reset("bar");
+
+            assertThat(updates.get()).isEqualTo(1);
+        }
+
+
+        @Test
+        @DisplayName("ignores outputs for equal values")
+        void ensureIgnoresOutputForEqualValues() throws Exception {
+
+            var updates = new AtomicInteger(0);
+            var s = Signal.of("foo");
+            s.connect(() -> updates.incrementAndGet());
+            s.reset("foo");
+
+            assertThat(updates.get()).isEqualTo(0);
+        }
+
+
+        @Test
+        @DisplayName("passes information when triggering connected outputs")
+        void ensurePassesInformationWhenTriggeringConnectedOutputs() throws Exception {
+
+            List<Triple<Signal, String, String>> updates = new ArrayList<>();
+
+            TriConsumer<Signal, String, String> triggerFn = (signal, prev, next) ->
+                    updates.add(Triple.<Signal, String, String>of(signal, prev, next));
+
+            var s = Signal.of("foo");
+            s.connect(triggerFn);
+            s.reset("bar");
+
+            assertThat(updates).hasSize(1);
+            assertThat(updates.get(0).first()).isEqualTo(s);
+            assertThat(updates.get(0).second()).isEqualTo("foo");
+            assertThat(updates.get(0).third()).isEqualTo("bar");
+        }
     }
 
 //    describe("signal", () => {
-//      it("triggers connected outputs for new values", () => {
-//        let updates = 0;
-//        let s = signal("foo");
-//        s.connect(() => updates++);
-//        s.reset("bar");
-//
-//        expect(updates).toBe(1);
-//      });
-//      it("ignores outputs for equal values", () => {
-//        let updates = 0;
-//        let s = signal("foo");
-//        s.connect(() => updates++);
-//        s.reset("foo");
-//
-//        expect(updates).toBe(0);
-//      });
-//      it("passes information when triggering connected outputs", () => {
-//        let updates = [];
-//        let triggerFn = (signal, prev, next) => {
-//          updates = [...updates, { signal, prev, next }];
-//        };
-//        let s = signal("foo");
-//        s.connect(triggerFn);
-//        s.reset("bar");
-//
-//        expect(updates.length).toBe(1);
-//        expect(updates[0].signal).toBe(s);
-//        expect(updates[0].prev).toBe("foo");
-//        expect(updates[0].next).toBe("bar");
-//      });
 //      it("disconnects a connected output", () => {
 //        let outputs = [0, 0];
 //        let s = signal("foo");
