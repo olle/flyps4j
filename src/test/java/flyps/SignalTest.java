@@ -1,39 +1,50 @@
 package flyps;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Signal")
+
 public class SignalTest {
 
-    @Test
-    @DisplayName("it returns its current value")
-    public void ensureReturnsCurrentValue() {
+    @Nested
+    @DisplayName("Signal")
+    static class EnsureSignal {
 
-        var s = Signal.of("foo");
-        assertThat(s.value()).isEqualTo("foo");
+        @Test
+        @DisplayName("returns its current value")
+        public void ensureReturnsCurrentValue() {
+
+            var s = Signal.of("foo");
+            assertThat(s.value()).isEqualTo("foo");
+        }
+
+
+        @Test
+        @DisplayName("resets its value")
+        void ensureResetsValue() throws Exception {
+
+            var s = Signal.of("foo");
+            s.reset("bar");
+            assertThat(s.value()).isEqualTo("bar");
+        }
+
+
+        @Test
+        @DisplayName("updates its value")
+        void ensureUpdateItsValue() throws Exception {
+
+            var s = Signal.of("foo");
+            s.update(state -> state + "bar");
+            assertThat(s.value()).isEqualTo("foobar");
+        }
     }
 
-//    import { signal, signalFn } from "./signal";
-//
 //    describe("signal", () => {
-//      it("returns its current value", () => {
-//        let s = signal("foo");
-//        expect(s.value()).toBe("foo");
-//      });
-//      it("resets its value", () => {
-//        let s = signal("foo");
-//        s.reset("bar");
-//        expect(s.value()).toBe("bar");
-//      });
-//      it("updates its value", () => {
-//        let s = signal("foo");
-//        s.update(state => state + "bar");
-//        expect(s.value()).toBe("foobar");
-//      });
 //      it("triggers connected outputs for new values", () => {
 //        let updates = 0;
 //        let s = signal("foo");
