@@ -14,6 +14,10 @@ import java.util.function.UnaryOperator;
  * change propagation to their dependent signals in the circuit and so on. The propagation stops as soon as there are
  * no more signals reacting to state changes.</p>
  *
+ * <p>A Signal is a container used to store state information. A Signal can be made to change state by calling
+ * {@link #reset(Object)} or {@link #update(UnaryOperator)}. Outputs can be connected to signals. Whenever the state of
+ * a Signal changes, all connected outputs will be triggered.</p>
+ *
  * @param  <T>  the type of the signal value
  */
 public class Signal<T> {
