@@ -76,10 +76,10 @@ public class SignalTest {
         @DisplayName("passes information when triggering connected outputs")
         void ensurePassesInformationWhenTriggeringConnectedOutputs() throws Exception {
 
-            List<Triple<Signal, String, String>> updates = new ArrayList<>();
+            List<Triple<Signal<String>, String, String>> updates = new ArrayList<>();
 
-            TriConsumer<Signal, String, String> triggerFn = (signal, prev, next) ->
-                    updates.add(Triple.<Signal, String, String>of(signal, prev, next));
+            TriConsumer<Signal<String>, String, String> triggerFn = (signal, prev, next) ->
+                    updates.add(Triple.<Signal<String>, String, String>of(signal, prev, next));
 
             var s = Signal.of("foo");
             s.connect(triggerFn);

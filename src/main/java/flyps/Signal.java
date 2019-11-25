@@ -5,30 +5,30 @@ import java.util.Collection;
 import java.util.function.UnaryOperator;
 
 
-public class Signal {
+public class Signal<T> {
 
-    private String value;
-    private Collection<TriConsumer<Signal, String, String>> connections;
+    private T value;
+    private Collection<TriConsumer<Signal<T>, T, T>> connections;
 
-    private Signal(String value) {
+    private Signal(T value) {
 
         this.value = value;
         this.connections = new ArrayList<>();
     }
 
-    public static Signal of(String value) {
-
-        return new Signal(value);
-    }
-
-
-    public String value() {
+    public T value() {
 
         return this.value;
     }
 
 
-    public void reset(String value) {
+    public static <T> Signal<T> of(T value) {
+
+        return new Signal<>(value);
+    }
+
+
+    public void reset(T value) {
 
         if (this.value.equals(value)) {
             return;
@@ -36,12 +36,11 @@ public class Signal {
 
         var prev = this.value;
         this.value = value;
-
         this.connections.forEach(connection -> connection.accept(this, prev, this.value));
     }
 
 
-    public void update(UnaryOperator<String> update) {
+    public void update(UnaryOperator<T> update) {
 
         reset(update.apply(value));
     }
@@ -49,15 +48,14 @@ public class Signal {
 
     public Runnable connect(Runnable connect) {
 
-        TriConsumer<Signal, String, String> connection = (s, n, p) -> connect.run();
-
+        TriConsumer<Signal<T>, T, T> connection = (s, n, p) -> connect.run();
         this.connections.add(connection);
 
         return () -> this.connections.remove(connection);
     }
 
 
-    public Runnable connect(TriConsumer<Signal, String, String> triggerFn) {
+    public Runnable connect(TriConsumer<Signal<T>, T, T> triggerFn) {
 
         this.connections.add(triggerFn);
 
