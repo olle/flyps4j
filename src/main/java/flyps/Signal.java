@@ -1,7 +1,9 @@
 package flyps;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 
@@ -22,58 +24,66 @@ import java.util.function.UnaryOperator;
  */
 public class Signal<T> {
 
-    private T value;
-    private Collection<TriConsumer<Signal<T>, T, T>> connections;
+    private T state;
+
+    private Set<TriConsumer<Signal<T>, T, T>> outputs;
 
     private Signal(T value) {
 
-        this.value = value;
-        this.connections = new ArrayList<>();
+        this.state = value;
+
+        this.outputs = new HashSet<>();
     }
 
     public T value() {
 
-        return this.value;
+        return this.state;
     }
 
 
-    public static <T> Signal<T> of(T value) {
+    public static <T> Signal<T> of(T state) {
 
-        return new Signal<>(value);
+        return new Signal<>(state);
     }
 
 
-    public void reset(T value) {
+    public void reset(T next) {
 
-        if (this.value.equals(value)) {
-            return;
+        var prev = this.state;
+        this.state = next;
+
+        if (!prev.equals(next)) {
+            this.outputs.forEach(connection -> connection.accept(this, prev, next));
         }
-
-        var prev = this.value;
-        this.value = value;
-        this.connections.forEach(connection -> connection.accept(this, prev, this.value));
     }
 
 
     public void update(UnaryOperator<T> update) {
 
-        reset(update.apply(value));
+        reset(update.apply(state));
+    }
+
+
+    public void update(BiFunction<T, Map<String, Object>, T> update, Map<String, Object> args) {
+
+        reset(update.apply(state, args));
     }
 
 
     public Runnable connect(Runnable connect) {
 
-        TriConsumer<Signal<T>, T, T> connection = (s, n, p) -> connect.run();
-        this.connections.add(connection);
+        TriConsumer<Signal<T>, T, T> connection = (s, p, n) -> connect.run();
 
-        return () -> this.connections.remove(connection);
+        this.outputs.add(connection);
+
+        return () -> this.outputs.remove(connection);
     }
 
 
     public Runnable connect(TriConsumer<Signal<T>, T, T> triggerFn) {
 
-        this.connections.add(triggerFn);
+        this.outputs.add(triggerFn);
 
-        return () -> this.connections.remove(triggerFn);
+        return () -> this.outputs.remove(triggerFn);
     }
 }
