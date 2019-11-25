@@ -5,6 +5,17 @@ import java.util.Collection;
 import java.util.function.UnaryOperator;
 
 
+/**
+ * A signal is a container for state information that changes over time.
+ *
+ * <p>Signals can depend on other signals (inputs). By creating signals and putting them together you build a circuit
+ * of signals. State changes will be propagated through the signal circuit starting from the signal where the state
+ * change happened. The state change might force dependent signals to also change their state which then leads to state
+ * change propagation to their dependent signals in the circuit and so on. The propagation stops as soon as there are
+ * no more signals reacting to state changes.</p>
+ *
+ * @param  <T>  the type of the signal value
+ */
 public class Signal<T> {
 
     private T value;
