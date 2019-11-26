@@ -13,8 +13,6 @@ import java.util.function.Consumer;
  * @param  <S1>  the type of the first argument to the operation
  * @param  <S2>  the type of the second argument to the operation
  * @param  <S3>  the type of the third argument to the operation
- *
- * @author  Olle Törnström - toernstroem@synyx.de
  */
 @FunctionalInterface
 public interface TriConsumer<S1, S2, S3> {
